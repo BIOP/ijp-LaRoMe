@@ -11,6 +11,10 @@ LaRoME = Label + Region Of Interest + Measure
 
 You can install LaRoMe via the PTBIOP update site.
 
+Help>Update..., Manage Update Sites, select PTBIOP in the list (cf image below), Apply changes, Restart Fiji.
+
+<img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/image.png" title="update site" width="75%" align="center">
+
 ## ImageJ plugin 
 
 Plugins > BIOP > Image Analysis > ROIs >
