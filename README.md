@@ -1,5 +1,3 @@
-
-
 # LaRoMe
 
 ## What a strange name ! 
@@ -9,6 +7,9 @@ LaRoME = Label + Region Of Interest + Measure
  
 **Measurement image**: An image in which pixels of an object have all the same value, corresponding to a measurement (Area, Angle, Mean...) 
 
+## Installation
+
+You can install LaRoMe via the PTBIOP update site.
 
 ## ImageJ plugin 
 
@@ -18,17 +19,12 @@ Plugins > BIOP > Image Analysis > ROIs >
 
 From a **Label Image**(§), generate ROIs and add them to the ImageJ ROI Manager.
 
-
-
-
 <img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/Label_image_to_ROIs.png" title="Label_image_to_ROIs" width="75%" align="center">
-
 
 ## run("ROIs to Label image", "")
 
 From an **Image** and some **ROIs**, generates a **Label Image**.
 <img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/ROIs_to_Label_image.png" title="ROIs to Label Image" width="75%" align="center">
-
 
 ## run("ROIs to Measurement Image", "column_name=Area");
 
