@@ -5,6 +5,7 @@ import ij.IJ;
 import ij.gui.Wand ;
 import ij.gui.PolygonRoi ;
 import ij.gui.Roi ;
+import ij.plugin.Duplicator;
 import ij.plugin.frame.RoiManager ;
 import ij.process.ImageProcessor;
 
@@ -31,20 +32,44 @@ public class Labels2Rois implements Command {
     @Parameter
     ImagePlus imp ;
 
+    @Parameter
+    RoiManager rm ;
+
     @Override
     public void run() {
 
         // reset RoiManager
-        RoiManager rm = RoiManager.getRoiManager();
         rm.reset();
+        // get the imp dimension (width, height, nChannels, nSlices, nFrames)
+        int[] dimensions = imp.getDimensions()    ;
+
+        int nChannels   = dimensions[2];
+        int nSlices     = dimensions[3];
+        int nFrames     = dimensions[4];
+
+        if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
+            System.out.println("it's an hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
+            return;
+
+        } else if ((nChannels>1)||(nSlices>1)||(nFrames>1)){
+            System.out.println("it's a stack, " );
+            for (int i = 0; i < imp.getImageStackSize(); i++) {
+                imp.setPosition(i+1);
+                L2Rprocessor( imp );
+            }
+        } else {
+            System.out.println("it's a single image");
+            L2Rprocessor( imp );
+        }
+    }
+
+    private void L2Rprocessor(ImagePlus imp ){
 
         Wand wand = new Wand( imp.getProcessor() );
 
-        // get the imp dimension, a create range list
-        int[] dimensions = imp.getDimensions()    ;
-
-        int width = dimensions[0];
-        int height = dimensions[1];
+        // create range list
+        int width = imp.getWidth();
+        int height = imp.getHeight();
 
         int[] pixel_width = new int[ width ];
         int[] pixel_height = new int[ height ];
@@ -80,8 +105,9 @@ public class Labels2Rois implements Command {
             }
         }
 
-            rm.runCommand( imp , "Show All" );
+        rm.runCommand( imp , "Show All" );
 
+        return;
     }
 
     /**
@@ -99,12 +125,22 @@ public class Labels2Rois implements Command {
         // create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        ImagePlus imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
+        Boolean test_with_single_image = false ;
 
-        IJ.setAutoThreshold(imp, "Default");
-
-        IJ.run(imp, "Analyze Particles...", "  show=[Count Masks]");
-
+        if (test_with_single_image){ // test on a single image, the famous blobs
+            ImagePlus imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
+            imp.show();
+            IJ.setAutoThreshold(imp, "Default");
+            IJ.run(imp, "Analyze Particles...", "  show=[Count Masks]");
+        } else { // or test on a stack
+            ImagePlus stk_imp = IJ.openImage("http://wsr.imagej.net/images/confocal-series.zip");
+            ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, stk_imp.getNSlices(), 1, 1);
+            IJ.run(c1_imp, "Median...", "radius=2 stack");
+            c1_imp.show();
+            IJ.setAutoThreshold(c1_imp, "Default dark");
+            IJ.run(c1_imp,"Analyze Particles...", "  show=[Count Masks] stack");
+        }
+        // will run on the current image
         ij.command().run(Labels2Rois.class, true);
     }
 }
