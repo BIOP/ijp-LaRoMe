@@ -130,7 +130,7 @@
 		<main-class>ch.epfl.biop.ij2command.Labels2Rois</main-class>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>EPFL</license.copyrightOwners>
-		<scijava.app.directory>C:/Fiji_4tests/Fiji.app/</scijava.app.directory>
+		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 		<scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory>
 	</properties>
 
