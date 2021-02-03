@@ -2,6 +2,7 @@ package ch.epfl.biop.ij2command;
 
 import ij.ImagePlus ;
 import ij.IJ;
+import ij.gui.WaitForUserDialog;
 import ij.gui.Wand ;
 import ij.gui.PolygonRoi ;
 import ij.gui.Roi ;
@@ -39,8 +40,11 @@ public class Labels2Rois implements Command {
     public void run() {
 
         ImagePlus copy_imp = imp.duplicate();
+        // copy_imp.show();
+
         // reset RoiManager
         rm.reset();
+
         // get the imp dimension (width, height, nChannels, nSlices, nFrames)
         int[] dimensions = copy_imp.getDimensions() ;
 
@@ -54,21 +58,14 @@ public class Labels2Rois implements Command {
         } else if ((nChannels>1)||(nSlices>1)||(nFrames>1)){
             System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
             for (int i = 0; i < copy_imp.getImageStackSize(); i++) {
-                // changes to imp.getStack().getProcessor(i)
                 copy_imp.setPosition(i+1);
                 L2R( copy_imp );
-                //
-                // Versus, but actually lost Stack pos!
-                //ImageProcessor ip = imp.getStack().getProcessor(i+1);// should not be messed by GUI
-                //L2Rprocessor( ip ); // change to processor
             }
         } else {
             System.out.println(""+imp.getTitle()+" is a single image");
-            //ImageProcessor ip = imp.getProcessor();
-            //L2Rprocessor( ip );
             L2R( copy_imp );
         }
-        copy_imp.show();
+
     }
 
     private void L2R(ImagePlus imp){
@@ -100,13 +97,15 @@ public class Labels2Rois implements Command {
                 if ( ip.getPixel( x_coord, y_coord ) > 0.0 ){
                     // use the magic wand at this coordinate
                     wand.autoOutline( x_coord, y_coord );
+
                     // if there is a region , then it has npoints
                     if ( wand.npoints > 0 ) {
                         // get the Polygon, fill with 0 and add to the manager
                         Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
-                        ip.setRoi( roi );
-                        ip.fill();
                         roi.setPosition( imp.getSlice() );
+                        ip.setRoi(roi);
+                        // ip.fill should use roi, otherwise make a rectangle that erases surrounding pixels
+                        ip.fill(roi);
                         rm.addRoi( roi );
                     }
                 }
@@ -141,8 +140,8 @@ public class Labels2Rois implements Command {
             IJ.run(imp, "Analyze Particles...", "  show=[Count Masks]");
         } else { // or test on a stack
             ImagePlus stk_imp = IJ.openImage("http://wsr.imagej.net/images/confocal-series.zip");
-            //ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, stk_imp.getNSlices(), 1, 1);
-            ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, 1, 1, 1);
+            ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, stk_imp.getNSlices(), 1, 1);
+            //ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, 1, 1, 1);
             IJ.run(c1_imp, "Median...", "radius=2 stack");
             c1_imp.show();
             IJ.setAutoThreshold(c1_imp, "Default dark");
