@@ -38,34 +38,43 @@ public class Labels2Rois implements Command {
     @Override
     public void run() {
 
+        ImagePlus copy_imp = imp.duplicate();
         // reset RoiManager
         rm.reset();
         // get the imp dimension (width, height, nChannels, nSlices, nFrames)
-        int[] dimensions = imp.getDimensions()    ;
+        int[] dimensions = copy_imp.getDimensions() ;
 
         int nChannels   = dimensions[2];
         int nSlices     = dimensions[3];
         int nFrames     = dimensions[4];
 
         if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
-            System.out.println("it's an hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
+            System.out.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
-
         } else if ((nChannels>1)||(nSlices>1)||(nFrames>1)){
-            System.out.println("it's a stack, " );
-            for (int i = 0; i < imp.getImageStackSize(); i++) {
-                imp.setPosition(i+1);
-                L2Rprocessor( imp );
+            System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
+            for (int i = 0; i < copy_imp.getImageStackSize(); i++) {
+                // changes to imp.getStack().getProcessor(i)
+                copy_imp.setPosition(i+1);
+                L2R( copy_imp );
+                //
+                // Versus, but actually lost Stack pos!
+                //ImageProcessor ip = imp.getStack().getProcessor(i+1);// should not be messed by GUI
+                //L2Rprocessor( ip ); // change to processor
             }
         } else {
-            System.out.println("it's a single image");
-            L2Rprocessor( imp );
+            System.out.println(""+imp.getTitle()+" is a single image");
+            //ImageProcessor ip = imp.getProcessor();
+            //L2Rprocessor( ip );
+            L2R( copy_imp );
         }
+        copy_imp.show();
     }
 
-    private void L2Rprocessor(ImagePlus imp ){
+    private void L2R(ImagePlus imp){
 
-        Wand wand = new Wand( imp.getProcessor() );
+        ImageProcessor ip = imp.getProcessor();
+        Wand wand = new Wand( ip );
 
         // create range list
         int width = imp.getWidth();
@@ -83,8 +92,6 @@ public class Labels2Rois implements Command {
          * finally set value to 0 and add to the roiManager
          */
 
-        // duplicate the processor for the task
-        ImageProcessor ip = imp.getProcessor().duplicate();
         // will "erase" found ROI by setting them to 0
         ip.setColor(0);
 
@@ -99,16 +106,16 @@ public class Labels2Rois implements Command {
                         Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
                         ip.setRoi( roi );
                         ip.fill();
+                        roi.setPosition( imp.getSlice() );
                         rm.addRoi( roi );
                     }
                 }
             }
         }
-
         rm.runCommand( imp , "Show All" );
-
         return;
     }
+
 
     /**
      * This main function serves for development purposes.
@@ -134,10 +141,12 @@ public class Labels2Rois implements Command {
             IJ.run(imp, "Analyze Particles...", "  show=[Count Masks]");
         } else { // or test on a stack
             ImagePlus stk_imp = IJ.openImage("http://wsr.imagej.net/images/confocal-series.zip");
-            ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, stk_imp.getNSlices(), 1, 1);
+            //ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, stk_imp.getNSlices(), 1, 1);
+            ImagePlus c1_imp = new Duplicator().run(stk_imp, 1, 1, 1, 1, 1, 1);
             IJ.run(c1_imp, "Median...", "radius=2 stack");
             c1_imp.show();
             IJ.setAutoThreshold(c1_imp, "Default dark");
+            IJ.run(c1_imp, "Convert to Mask", "method=Default background=Dark calculate black");
             IJ.run(c1_imp,"Analyze Particles...", "  show=[Count Masks] stack");
         }
         // will run on the current image
