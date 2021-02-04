@@ -101,7 +101,7 @@ public class Labels2Rois implements Command {
                     if ( wand.npoints > 0 ) {
                         // get the Polygon, fill with 0 and add to the manager
                         Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
-                        roi.setPosition( imp.getSlice() );
+                        roi.setPosition( imp.getCurrentSlice() );
                         // ip.fill should use roi, otherwise make a rectangle that erases surrounding pixels
                         ip.fill(roi);
                         rm.addRoi( roi );
