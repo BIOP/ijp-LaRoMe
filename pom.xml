@@ -14,7 +14,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>LaRoMe</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 
 	<name>LaRoMe</name>
 	<description> LaRoMe - BIOP - EPFL</description>
@@ -130,7 +130,7 @@
 		<main-class>ch.epfl.biop.ij2command.Labels2Rois</main-class>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>EPFL</license.copyrightOwners>
-		<scijava.app.directory>C:/Fiji_4tests/Fiji.app/</scijava.app.directory>
+		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 		<scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory>
 	</properties>
 
@@ -149,7 +149,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
