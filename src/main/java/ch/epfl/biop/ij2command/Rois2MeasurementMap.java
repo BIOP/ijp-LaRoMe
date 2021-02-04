@@ -36,6 +36,7 @@ public class Rois2MeasurementMap implements Command {
 
     @Override
     public void run() {
+        // TODO make it work on Stack
 
         // reset RoiManager
         RoiManager rm = RoiManager.getRoiManager();
