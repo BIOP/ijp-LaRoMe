@@ -2,7 +2,6 @@ package ch.epfl.biop.ij2command;
 
 import ij.ImagePlus ;
 import ij.IJ;
-import ij.gui.WaitForUserDialog;
 import ij.gui.Wand ;
 import ij.gui.PolygonRoi ;
 import ij.gui.Roi ;
@@ -53,16 +52,16 @@ public class Labels2Rois implements Command {
         int nFrames     = dimensions[4];
 
         if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
-            System.out.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
+            System.err.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
         } else if ((nChannels>1)||(nSlices>1)||(nFrames>1)){
-            System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
+           //System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
             for (int i = 0; i < copy_imp.getImageStackSize(); i++) {
                 copy_imp.setPosition(i+1);
                 L2R( copy_imp );
             }
         } else {
-            System.out.println(""+imp.getTitle()+" is a single image");
+            //System.out.println(""+imp.getTitle()+" is a single image");
             L2R( copy_imp );
         }
 
@@ -103,7 +102,6 @@ public class Labels2Rois implements Command {
                         // get the Polygon, fill with 0 and add to the manager
                         Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
                         roi.setPosition( imp.getSlice() );
-                        ip.setRoi(roi);
                         // ip.fill should use roi, otherwise make a rectangle that erases surrounding pixels
                         ip.fill(roi);
                         rm.addRoi( roi );

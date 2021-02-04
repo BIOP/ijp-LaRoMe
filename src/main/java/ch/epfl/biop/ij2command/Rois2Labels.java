@@ -40,9 +40,6 @@ public class Rois2Labels implements Command {
     @Override
     public void run() {
 
-        // RoiManager
-        RoiManager rm = RoiManager.getRoiManager();
-
         // get the imp dimension (width, height, nChannels, nSlices, nFrames)
         int[] dimensions = imp.getDimensions()    ;
 
@@ -53,11 +50,9 @@ public class Rois2Labels implements Command {
         ImagePlus label_imp;
 
         if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
-            System.out.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
+            System.err.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
-        } else if ((nChannels>1)||(nSlices>1)||(nFrames>1)) System.out.println(""+imp.getTitle()+" is a stack" );
-        else System.out.println(""+imp.getTitle()+" is a single image");
-
+        }
         label_imp = R2L( imp );
         label_imp.show();
     }
