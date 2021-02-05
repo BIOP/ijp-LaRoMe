@@ -45,15 +45,11 @@ public class Rois2MeasurementMap implements Command {
 
     @Override
     public void run() {
-
         ImagePlus results_imp = R2M( imp );
         results_imp.show();
-
     }
 
-
     private ImagePlus R2M(ImagePlus imp ){
-
         // duplicate the imp for the task
         ImagePlus imp2 = imp.duplicate();
         // check if it's a stack
@@ -152,9 +148,6 @@ public class Rois2MeasurementMap implements Command {
         }
         imp2.setTitle(column_name +"_Image");
         return imp2;
-        //ImagePlus imp2 = new ImagePlus(column_name +"_Image" , ip_result );
-        //imp2.show();
-        //IJ.resetMinAndMax(imp2);
 
         /*
         if (rtw != null){
