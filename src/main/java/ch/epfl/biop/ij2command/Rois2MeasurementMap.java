@@ -13,6 +13,9 @@ import org.scijava.plugin.Plugin;
 
 import ij.process.ImageStatistics;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static javax.xml.bind.DatatypeConverter.parseFloat;
 
 /**
@@ -34,8 +37,11 @@ public class Rois2MeasurementMap implements Command {
     @Parameter
     RoiManager rm ;
 
-    @Parameter ( label="Measure", choices = {"Area", "Angle", "AngleVert","AR", "Circ.", "Major","Minor","Mean","Median","Mode","Min","Max", "Perim.","Track"})
+    @Parameter ( label="Measure", choices = {"Area", "Angle", "AngleVert","AR", "Circ.", "Major","Minor","Mean","Median","Mode","Min","Max", "Perim.","Pattern"})
     String column_name;
+
+    @Parameter ( label="If Pattern, please specify a regex capture group,\n(will take first group, must be numerical)", required=false )
+    String pattern = "Track-(\\d*):.*";
 
     @Override
     public void run() {
@@ -61,22 +67,25 @@ public class Rois2MeasurementMap implements Command {
         }
         // convert to 32-bit (because measurements can be float , or negative)
         IJ.run(imp2, "32-bit", "");
-        // initiate the filling value
-        double filling_value = 0.0;
 
         Roi[] rois = rm.getRoisAsArray()  ;
         for (int i = 0; i < rois.length; i++) {
+            // initiate the filling value
+            double filling_value = 0.0;
             //set the position in the stack if necessary
-            if ( isStack )  imp2.setPosition( rois[i].getPosition() );
+            if ( isStack ) { // set position on both imp (for stats) and imp2 to set values
+                imp.setPosition( rois[i].getPosition() );
+                imp2.setPosition( rois[i].getPosition() );
+            }
             // and set the ROI
+            imp.setRoi( rois[i]);
             imp2.setRoi( rois[i]);
             // so we can get Stats
-            ImageStatistics ip_stats = imp2.getProcessor().getStatistics() ;
-            System.out.println( ip_stats);
+            ImageStatistics ip_stats = imp.getStatistics() ;
             // from user choice
             switch (column_name) {
                 case "Area" :
-                    filling_value = ip_stats.area;
+                    filling_value = ip_stats.area ;
                     break;
                 case "Angle" :
                     filling_value = ip_stats.angle;
@@ -116,16 +125,23 @@ public class Rois2MeasurementMap implements Command {
                 case "Perim.":
                     filling_value = rois[i].getLength();
                     break;
-                case "Track":
+                case "Pattern":
                     // roi_name follows the model Track-0001:Frame-0001 ...
-                    // which corresponds to an output from a custom script making use of TrackMate, to link rois
-                    // value will be the number of the track, hijacking Rois2Measurements to make a  Rois2Labels
+                    // which corresponds to an output from a custom script making use of TrackMate, to link rois.
+                    // Values will be the index of the track (hijacking Rois2Measurements to make a  Rois2Labels)
                     String roi_name = rois[i].getName();
-                    if (roi_name.matches("Track-.*")) {
-                        String[] splitted_roi_name = roi_name.split(":");
-                        filling_value = parseFloat( splitted_roi_name[0].split("-")[1] );
-                    }else{ // orphan ROIs won't be filled
-                        filling_value = 0.0;
+                    Pattern r = Pattern.compile(pattern);
+                    Matcher m = r.matcher(roi_name);
+                    if (m.find( )) {
+                        String group = m.group(1);
+                       try {
+                           filling_value = parseFloat(group);
+                       } catch (Exception e ){
+                           System.err.println("Issue with your pattern! Can't get a numerical value from it");
+                           e.printStackTrace();
+                           filling_value = 0.0;
+                       }
+
                     }
                     break;
             }
@@ -168,7 +184,7 @@ public class Rois2MeasurementMap implements Command {
              imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
             imp.show();
             IJ.setAutoThreshold(imp, "Default");
-            IJ.run(imp, "Analyze Particles...", "  show=[Count Masks]");
+            IJ.run(imp, "Analyze Particles...", "  show=Nothing add");
 
         } else { // or test on a stack
             ImagePlus stk_imp = IJ.openImage("http://wsr.imagej.net/images/confocal-series.zip");
@@ -178,10 +194,9 @@ public class Rois2MeasurementMap implements Command {
             imp.show();
             IJ.setAutoThreshold(imp, "Default dark");
             IJ.run(imp, "Convert to Mask", "method=Default background=Dark calculate black");
-            IJ.run(imp,"Analyze Particles...", "  show=[Count Masks] stack");
+            IJ.run(imp, "Analyze Particles...", "  show=Nothing add stack");
         }
 
-        IJ.run(imp, "Label image to ROIs", "");
         ij.command().run(Rois2MeasurementMap.class, true, "column_name","Area");
     }
 }
