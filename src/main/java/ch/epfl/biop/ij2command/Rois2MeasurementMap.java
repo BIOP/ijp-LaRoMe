@@ -5,7 +5,6 @@ import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.plugin.Duplicator;
 import ij.plugin.frame.RoiManager;
-import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -16,7 +15,6 @@ import ij.process.ImageStatistics;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static javax.xml.bind.DatatypeConverter.parseFloat;
 
 /**
  *
@@ -131,7 +129,7 @@ public class Rois2MeasurementMap implements Command {
                     if (m.find( )) {
                         String group = m.group(1);
                        try {
-                           filling_value = parseFloat(group);
+                           filling_value = Float.parseFloat(group);
                        } catch (Exception e ){
                            System.err.println("Issue with your pattern! Can't get a numerical value from it");
                            e.printStackTrace();
