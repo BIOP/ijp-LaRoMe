@@ -25,10 +25,22 @@ From a **Label Image**(§), generate ROIs and add them to the ImageJ ROI Manager
 
 <img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/Label_image_to_ROIs.png" title="Label_image_to_ROIs" width="75%" align="center">
 
+Macro Language, you can use ```run("Label image to ROIs");``` as in the example code below : 
+```
+if (nImages>0) run("Label image to ROIs");
+```
+
 ## run("ROIs to Label image", "")
 
 From an **Image** and some **ROIs**, generates a **Label Image**.
 <img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/ROIs_to_Label_image.png" title="ROIs to Label Image" width="75%" align="center">
+
+Macro Language, you can use ```run("ROIs to Label image");``` as in the example code below :  
+```
+if ((nImages>0)&&( roiManager("count") > 0)) run("ROIs to Label image");
+else if (roiManager("count") == 0) print("No existing ROIs to make Label Image");
+else if (nImages==0) print("No open image to use as template for dimensions");
+```
 
 ## run("ROIs to Measurement Image", "column_name=Area");
 
@@ -43,3 +55,14 @@ Measurement list encompass (change column_name ) :
 **AR**, Aspect Ratio = Major / Minor
 
 **Circ.**, Aspect Ratio = 4 * PI * Area / Perim.^2
+
+
+Macro Language, you can use ```run("ROIs to Measurement Image";``` as in the example code below: 
+
+``` run("ROIs to Measurement Image" , "column_name=Area pattern=[]"); ```
+
+
+With the lastest version (0.2) you can now use the ROI name with the option Pattern to define label (application for tracking or 3D-objects). 
+
+<img src="https://github.com/BIOP/ijp-LaRoMe/raw/dev-stack/images/ROIs_to_Measurement_Image_Pattern.png" title="pattern" width="75%" align="center">
+
