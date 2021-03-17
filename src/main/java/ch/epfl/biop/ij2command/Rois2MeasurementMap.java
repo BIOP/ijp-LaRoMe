@@ -35,7 +35,22 @@ public class Rois2MeasurementMap implements Command {
     @Parameter
     RoiManager rm ;
 
-    @Parameter ( label="Measure", choices = {"Area", "Angle", "AngleVert","AR", "Circ.", "Major","Minor","Mean","Median","Mode","Min","Max", "Perim.","Pattern"})
+    @Parameter(label = "Measure", choices = {   "Area",
+                                                "Angle",
+                                                "AngleVert",
+                                                "AR",
+                                                "Circ.",
+                                                "Major",
+                                                "Minor",
+                                                "Mean",
+                                                "Median",
+                                                "Mode",
+                                                "Min",
+                                                "Max",
+                                                "Perim.",
+                                                "Pattern",
+                                                "xCenterOfMass",
+                                                "yCenterOfMass"})
     String column_name;
 
     @Parameter ( label="If Pattern, please specify a regex capture group,\n(will take first group, must be numerical)", required=false )
@@ -140,8 +155,14 @@ public class Rois2MeasurementMap implements Command {
 
                     }
                     break;
+                case "xCenterOfMass":
+                    filling_value = ip_stats.xCenterOfMass;
+                    break;
+                case "yCenterOfMass":
+                    filling_value = ip_stats.yCenterOfMass;
+                    break;
             }
-            System.out.println( filling_value );
+            //System.out.println( filling_value );
             imp2.getProcessor().setValue( filling_value );
             imp2.getProcessor().fill( rois[i] );
 
@@ -174,8 +195,9 @@ public class Rois2MeasurementMap implements Command {
         Boolean test_with_single_image = true ;
         ImagePlus imp = new ImagePlus();
         if (test_with_single_image){ // test on a single image, the famous blobs
-             imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
+            imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
             imp.show();
+            IJ.run(imp, "Invert LUT", "");
             IJ.setAutoThreshold(imp, "Default");
             IJ.run(imp, "Analyze Particles...", "  show=Nothing add");
 
@@ -203,6 +225,10 @@ public class Rois2MeasurementMap implements Command {
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Max", "pattern", "");
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Perim.", "pattern", "");
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Pattern", "pattern", "");
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "xCenterOfMass", "pattern", "");
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "yCenterOfMass", "pattern", "");
+
+        IJ.run("Tile", "");
     }
 }
 
