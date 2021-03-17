@@ -62,7 +62,9 @@ Macro Language, you can use ```run("ROIs to Measurement Image";``` as in the exa
 ``` run("ROIs to Measurement Image" , "column_name=Area pattern=[]"); ```
 
 
-With the lastest version (0.2) you can now use the ROI name with the option Pattern to define label (application for tracking or 3D-objects). 
+With the lastest version (0.2) you can now use the ROI name with the option Pattern to define label (application for tracking or 3D-objects).
+For example , using [ijs-script](https://github.com/BIOP/ijs-TrackMate/blob/master/ijs-Run-TrackMate-Using-RoiManager-or-ResultsTable.groovy) 
+you can use ``Track-(\d*):.*`` to generate a label image per track.
 
 <img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/ROIs_to_Measurement_Image_Pattern.png" title="pattern" width="75%" align="center">
 
