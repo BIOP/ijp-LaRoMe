@@ -15,6 +15,7 @@ public class DummyCommandTest {
         // Arrange
         // create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
+        ij.ui().showUI();
         ImagePlus imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
 
         IJ.setAutoThreshold(imp, "Default");

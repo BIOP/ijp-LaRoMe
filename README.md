@@ -67,4 +67,3 @@ For example , using [ijs-script](https://github.com/BIOP/ijs-TrackMate/blob/mast
 you can use ``Track-(\d*):.*`` to generate a label image per track.
 
 <img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/ROIs_to_Measurement_Image_Pattern.png" title="pattern" width="75%" align="center">
-
