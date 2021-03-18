@@ -67,6 +67,13 @@ public class Rois2MeasurementMap implements Command {
     private ImagePlus R2M(ImagePlus imp ){
         // duplicate the imp for the task
         ImagePlus imp2 = imp.duplicate();
+
+
+        // this is a hack in case the input image is a 32-bit
+        // indeed without adding it, the pixels outside of ROIs were not at 0 but 3.4e38!
+        // TODO find a better way to solve this
+        if (imp.getBitDepth()==32) IJ.run(imp2, "16-bit", "");
+
         // check if it's a stack
         int stackN = imp2.getImageStackSize();
         boolean isStack = false ;
@@ -76,8 +83,10 @@ public class Rois2MeasurementMap implements Command {
             imp2.getStack().getProcessor(i + 1).setValue(0.0);
             imp2.getStack().getProcessor(i + 1).fill();
         }
+
         // convert to 32-bit (because measurements can be float , or negative)
         IJ.run(imp2, "32-bit", "");
+        //imp2.show();
 
         Roi[] rois = rm.getRoisAsArray()  ;
         for (int i = 0; i < rois.length; i++) {
@@ -168,6 +177,7 @@ public class Rois2MeasurementMap implements Command {
 
         }
         imp2.setTitle(column_name +"_Image");
+
         return imp2;
 
         /*
@@ -198,7 +208,7 @@ public class Rois2MeasurementMap implements Command {
             imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
             imp.show();
             IJ.run(imp, "Invert LUT", "");
-            IJ.setAutoThreshold(imp, "Default");
+            IJ.setAutoThreshold(imp, "Default dark");
             IJ.run(imp, "Analyze Particles...", "  show=Nothing add");
 
         } else { // or test on a stack
