@@ -53,7 +53,7 @@ public class Rois2MeasurementMap implements Command {
                                                 "yCenterOfMass"})
     String column_name;
 
-    @Parameter ( label="If Pattern, please specify a regex capture group,\n(will take first group, must be numerical)", required=false )
+    @Parameter ( label="If Pattern, please specify a regex capture group,\n(will take first group, must be numerical, 'Track-(\\d*):.*' )", required=false )
     String pattern = "Track-(\\d*):.*";
 
     @Override
@@ -83,7 +83,6 @@ public class Rois2MeasurementMap implements Command {
             imp2.getStack().getProcessor(i + 1).setValue(0.0);
             imp2.getStack().getProcessor(i + 1).fill();
         }
-
         // convert to 32-bit (because measurements can be float , or negative)
         IJ.run(imp2, "32-bit", "");
         //imp2.show();
