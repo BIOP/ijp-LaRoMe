@@ -10,6 +10,7 @@ import ij.plugin.Duplicator;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -37,24 +38,25 @@ public class Rois2Labels implements Command {
     @Parameter
     RoiManager rm ;
 
+    @Parameter (type= ItemIO.OUTPUT)
+    ImagePlus label_imp ;
+
     @Override
     public void run() {
 
         // get the imp dimension (width, height, nChannels, nSlices, nFrames)
-        int[] dimensions = imp.getDimensions()    ;
+        int[] dimensions = imp.getDimensions();
 
         int nChannels   = dimensions[2];
         int nSlices     = dimensions[3];
         int nFrames     = dimensions[4];
-
-        ImagePlus label_imp;
 
         if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
             System.err.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
         }
         label_imp = R2L( imp );
-        label_imp.show();
+        //label_imp.show();
     }
 
     private ImagePlus R2L(ImagePlus imp ){
