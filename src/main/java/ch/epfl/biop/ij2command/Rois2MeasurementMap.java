@@ -6,6 +6,7 @@ import ij.gui.Roi;
 import ij.plugin.Duplicator;
 import ij.plugin.frame.RoiManager;
 import net.imagej.ImageJ;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -56,12 +57,15 @@ public class Rois2MeasurementMap implements Command {
     @Parameter ( label="If Pattern, please specify a regex capture group,\n(will take first group, must be numerical, 'Track-(\\d*):.*' )", required=false )
     String pattern = "Track-(\\d*):.*";
 
+    @Parameter (type= ItemIO.OUTPUT)
+    ImagePlus results_imp ;
+
     @Override
     public void run() {
-        ImagePlus results_imp = R2M( imp );
-        results_imp.show();
-        IJ.run(results_imp, "Select All", "");
-        IJ.resetMinAndMax(results_imp);
+        results_imp = R2M( imp );
+        //results_imp.show();
+        //IJ.run(results_imp, "Select All", "");
+        //IJ.resetMinAndMax(results_imp);
     }
 
     private ImagePlus R2M(ImagePlus imp ){
@@ -176,7 +180,7 @@ public class Rois2MeasurementMap implements Command {
 
         }
         imp2.setTitle(column_name +"_Image");
-
+        imp2.setRoi(0,0, imp2.getWidth(),imp2.getHeight() );
         return imp2;
 
         /*

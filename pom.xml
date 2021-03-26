@@ -14,7 +14,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>LaRoMe</artifactId>
-	<version>0.2.2-SNAPSHOT</version>
+	<version>0.2.3-SNAPSHOT</version>
 
 	<name>LaRoMe</name>
 	<description> LaRoMe - BIOP - EPFL</description>
