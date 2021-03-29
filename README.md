@@ -7,6 +7,10 @@ LaRoME = Label + Region Of Interest + Measure
  
 **Measurement image**: An image in which pixels of an object have all the same value, corresponding to a measurement (Area, Angle, Mean...) 
 
+## Scripting
+
+You can find a Macro language and a Groovy examples in the scripts folder.
+
 ## Installation
 
 You can install LaRoMe via the PTBIOP update site.
