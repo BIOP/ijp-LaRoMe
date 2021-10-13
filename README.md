@@ -1,3 +1,5 @@
+[![](https://github.com/BIOP/ijp-LaRoMe/actions/workflows/build-main.yml/badge.svg)](https://github.com/BIOP/ijp-LaRoMe/actions/workflows/build-main.yml)
+
 # LaRoMe
 
 ## What a strange name ! 
