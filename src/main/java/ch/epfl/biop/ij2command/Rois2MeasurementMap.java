@@ -112,8 +112,8 @@ public class Rois2MeasurementMap implements Command {
         // convert to 32-bit (because measurements can be float , or negative)
         IJ.run(imp2, "32-bit", "");
         //imp2.show();
-        System.out.println( "##################################################" );
-        System.out.println( column_name );
+        //System.out.println( "##################################################" );
+        //System.out.println( column_name );
         Roi[] rois = rm.getRoisAsArray()  ;
         for (int i = 0; i < rois.length; i++) {
             // initiate the filling value
@@ -199,7 +199,7 @@ public class Rois2MeasurementMap implements Command {
                     filling_value = ip_stats.yCenterOfMass;
                     break;
             }
-            System.out.println( filling_value );
+            //System.out.println( filling_value );
             ip2.setValue( filling_value );
             ip2.fill( rois[i] );
             imp2.setProcessor(ip2);
@@ -231,7 +231,7 @@ public class Rois2MeasurementMap implements Command {
         ij.ui().showUI();
         RoiManager rm = RoiManager.getRoiManager();
 
-        Boolean test_with_single_image = true ;
+        Boolean test_with_single_image = false ;
         ImagePlus imp = new ImagePlus();
         if (test_with_single_image){ // test on a single image, the famous blobs
             imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
