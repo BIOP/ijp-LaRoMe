@@ -125,7 +125,9 @@ public class Rois2MeasurementMap implements Command {
             imp.setRoi( rois[i]);
             imp2.setRoi( rois[i]);
             // so we can get Stats
-            ImageStatistics ip_stats = imp.getProcessor().getStatistics() ;
+            ImageProcessor ip = imp.getProcessor();
+            ip.setRoi( rois[i]);
+            ImageStatistics ip_stats = ip.getStatistics() ;
             // from user choice
             switch (column_name) {
                 case "Area" :
