@@ -26,6 +26,7 @@ import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.plugin.Duplicator;
 import ij.plugin.frame.RoiManager;
+import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -111,7 +112,8 @@ public class Rois2MeasurementMap implements Command {
         // convert to 32-bit (because measurements can be float , or negative)
         IJ.run(imp2, "32-bit", "");
         //imp2.show();
-
+        //System.out.println( "##################################################" );
+        //System.out.println( column_name );
         Roi[] rois = rm.getRoisAsArray()  ;
         for (int i = 0; i < rois.length; i++) {
             // initiate the filling value
@@ -122,10 +124,12 @@ public class Rois2MeasurementMap implements Command {
                 imp2.setPosition( rois[i].getPosition() );
             }
             // and set the ROI
-            imp.setRoi( rois[i]);
-            imp2.setRoi( rois[i]);
+            ImageProcessor ip = imp.getProcessor();
+            ip.setRoi( rois[i]);
+            ImageProcessor ip2 = imp2.getProcessor();
+            ip2.setRoi( rois[i]);
             // so we can get Stats
-            ImageStatistics ip_stats = imp.getProcessor().getStatistics() ;
+            ImageStatistics ip_stats = ip.getStatistics() ;
             // from user choice
             switch (column_name) {
                 case "Area" :
@@ -158,7 +162,7 @@ public class Rois2MeasurementMap implements Command {
                     filling_value = ip_stats.median;
                     break;
                 case "Mode" :
-                    filling_value = ip_stats.mode;
+                    filling_value = ip_stats.dmode;
                     break;
                 case "Min" :
                     filling_value = ip_stats.min;
@@ -196,10 +200,11 @@ public class Rois2MeasurementMap implements Command {
                     break;
             }
             //System.out.println( filling_value );
-            imp2.getProcessor().setValue( filling_value );
-            imp2.getProcessor().fill( rois[i] );
-
+            ip2.setValue( filling_value );
+            ip2.fill( rois[i] );
+            imp2.setProcessor(ip2);
         }
+
         imp2.setTitle(column_name +"_Image");
         imp2.setRoi(0,0, imp2.getWidth(),imp2.getHeight() );
         return imp2;
@@ -226,7 +231,7 @@ public class Rois2MeasurementMap implements Command {
         ij.ui().showUI();
         RoiManager rm = RoiManager.getRoiManager();
 
-        Boolean test_with_single_image = true ;
+        Boolean test_with_single_image = false ;
         ImagePlus imp = new ImagePlus();
         if (test_with_single_image){ // test on a single image, the famous blobs
             imp = IJ.openImage("http://imagej.nih.gov/ij/images/blobs.gif");
@@ -245,22 +250,23 @@ public class Rois2MeasurementMap implements Command {
             IJ.run(imp, "Convert to Mask", "method=Default background=Dark calculate black");
             IJ.run(imp, "Analyze Particles...", "  show=Nothing add stack");
         }
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Area" , "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Angle", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "AngleVert", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "AR", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Circ.", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Major", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Minor", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Mean", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Median", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Mode", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Min", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Max", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Perim.", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Pattern", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "xCenterOfMass", "pattern", "");
-        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "yCenterOfMass", "pattern", "");
+
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Area" , "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Angle", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "AngleVert", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "AR", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Circ.", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Major", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Minor", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Mean", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Median", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Mode", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Min", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Max", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Perim.", "pattern", "").get();
+        //ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Pattern", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "xCenterOfMass", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "yCenterOfMass", "pattern", "").get();
 
         IJ.run("Tile", "");
     }
