@@ -33,6 +33,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import ij.process.ImageStatistics;
+import ij.process.ImageProcessor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
