@@ -21,11 +21,8 @@
  */
 package ch.epfl.biop.ij2command;
 
-import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Overlay;
 import ij.gui.Roi;
-import ij.plugin.Duplicator;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
@@ -85,28 +82,27 @@ public class Labels2CompositeRois implements Command {
 
         // Log time taken
         long start = System.currentTimeMillis();
-        // Help format resulting time
+
+        // Help format resulting time with 2 decimal places
         DecimalFormat df = new DecimalFormat("#.##");
 
-        ImagePlus copy_imp = imp.duplicate();
-
-        // reset RoiManager
         rm.reset();
 
-        if (copy_imp.getNDimensions() > 3) {
+        if (imp.getNDimensions() > 3) {
             log.error(imp.getTitle() + " is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
         }
 
-        // Pick up the ROIs from all ImageProcessors as a flat map. Avoid adding it in parallel to the overlay
-        List<Roi> allRois = IntStream.range(0, copy_imp.getImageStackSize()).parallel()
-                .mapToObj(i -> L2Rp(imp.getStack().getProcessor(i + 1), i + 1) )
+        // Pick up the ROIs from all ImageProcessors as a flat map. Avoid adding it in parallel to the ROI Manager, so we do it later
+        List<Roi> allRois = IntStream.range(0, imp.getImageStackSize()).parallel()
+                .mapToObj(i -> L2Rp(imp.getStack().getProcessor(i + 1), i + 1))
                 .flatMap(r -> r.stream()).collect(Collectors.toList());
 
-        // Adding all ROIs to the roiManager
+
         log.info("Adding " + allRois.size() + " Rois to the ROI Manager");
         for (Roi r : allRois) {
-            // This should avoid GUI updates
+            // This should avoid GUI updates, but we need to cast null to ImagePlus xD
+            // Otherwise, it becomes an ambiguous call as it clashes with another add() method.
             rm.add((ImagePlus) null, r, -1);
         }
 
@@ -116,7 +112,8 @@ public class Labels2CompositeRois implements Command {
 
     /**
      * Converts Labels to ROIs by iteratively thresholding the label image
-     * @param ip the processor to extract the data from
+     *
+     * @param ip       the processor to extract the data from
      * @param position the position of that processor in the image stack
      * @return a list of ImageJ Rois
      */
@@ -137,9 +134,8 @@ public class Labels2CompositeRois implements Command {
         Set<Float> labels = new HashSet<>((int) max);
 
         //make hash to find uniques
-        for (int j = 0; j < pixels.length; j++) {
-            labels.add(pixels[j]);
-        }
+        for (int j = 0; j < pixels.length; j++) labels.add(pixels[j]);
+
         // Remove label 0
         labels.remove(new Float(0));
 
@@ -149,7 +145,9 @@ public class Labels2CompositeRois implements Command {
             ip2.setThreshold(lab, lab, ImageProcessor.NO_LUT_UPDATE);
             Roi roi = new ThresholdToSelection().convert(ip2);
             roi.setPosition(position);
-            String roiName = String.format("%04d", position) +" - ID " +String.format("%04d", lab.intValue());
+
+            // Name the Roi with the position in the stack followed by the label ID
+            String roiName = String.format("%04d", position) + " - ID " + String.format("%04d", lab.intValue());
             roi.setName(roiName);
             return roi;
         }).collect(Collectors.toList());
@@ -159,6 +157,7 @@ public class Labels2CompositeRois implements Command {
 
     /**
      * O(n) method to get the max of unsorted data
+     *
      * @param values the float array to find the max of
      * @return the maximum value
      */
