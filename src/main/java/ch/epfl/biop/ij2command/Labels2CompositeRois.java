@@ -47,7 +47,6 @@ import java.util.stream.IntStream;
  * It also allows for arbitrary roi shapes, which was not possible in the original
  * </p>
  */
-
 @Plugin(type = Command.class, menuPath = "Plugins>BIOP>Image Analysis>ROIs>Label image to composite ROIs")
 public class Labels2CompositeRois implements Command {
 
@@ -68,8 +67,6 @@ public class Labels2CompositeRois implements Command {
      * @param args whatever, it's ignored
      * @throws Exception
      */
-
-
     public static void main(final String... args) throws Exception {
 
         // create the ImageJ application context with all available services
@@ -124,9 +121,7 @@ public class Labels2CompositeRois implements Command {
         // different pixel types
         float[] pixels = (float[]) ip.convertToFloatProcessor().getPixels();
 
-        // Looping through the pixel array to find the max is O(n), so that's the fastest
-        // worse case we make too many labels if they are discontinuous.
-        float max = getMax(pixels);
+        double max = ip.getMax();
 
         // Find unique values for the labels
         // Pre-initialize with the max label value, so the worse thing that can happen is that
@@ -154,20 +149,4 @@ public class Labels2CompositeRois implements Command {
 
         return rois;
     }
-
-    /**
-     * O(n) method to get the max of unsorted data
-     *
-     * @param values the float array to find the max of
-     * @return the maximum value
-     */
-    private float getMax(float[] values) {
-        float max = 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i] > max) max = values[i];
-        }
-        return max;
-    }
 }
-
-
