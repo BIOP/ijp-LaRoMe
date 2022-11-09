@@ -36,6 +36,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.stream.IntStream;
 
 /**
@@ -56,46 +57,48 @@ public class Labels2Rois implements Command {
     @Parameter
     RoiManager rm ;
 
+    ArrayList<Roi> rois;
+
     @Override
     public void run() {
 
-        ImagePlus copy_imp = imp.duplicate();
-        // copy_imp.show();
-
+        ImagePlus copy = imp.duplicate();
         // reset RoiManager
         rm.reset();
+        rois = new ArrayList<Roi>();
 
         // get the imp dimension (width, height, nChannels, nSlices, nFrames)
-        int[] dimensions = copy_imp.getDimensions() ;
+        int[] dimensions = copy.getDimensions();
 
         int nChannels   = dimensions[2];
         int nSlices     = dimensions[3];
         int nFrames     = dimensions[4];
 
         if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
-            System.err.println(""+imp.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
+            System.err.println(""+copy.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
-        } else if ((nChannels>1)||(nSlices>1)||(nFrames>1)){
-           //System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
-            for (int i = 0; i < copy_imp.getImageStackSize(); i++) {
-                copy_imp.setPosition(i+1);
-                L2R( copy_imp );
-            }
         } else {
-            //System.out.println(""+imp.getTitle()+" is a single image");
-            L2R( copy_imp );
+            //System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
+            for (int i = 0; i < copy.getImageStackSize(); i++) {
+                ImageProcessor ip = copy.getImageStack().getProcessor(i + 1);
+                L2R(ip, i + 1);
+            }
         }
 
+        for (Roi r : rois)
+         {
+            // This should avoid GUI updates, but we need to cast null to ImagePlus xD
+            // Otherwise, it becomes an ambiguous call as it clashes with another add() method.
+            rm.add((ImagePlus) null, r, -1);
+        }
     }
 
-    private void L2R(ImagePlus imp){
-
-        ImageProcessor ip = imp.getProcessor();
+    private void L2R(ImageProcessor ip, int position){
         Wand wand = new Wand( ip );
 
         // create range list
-        int width = imp.getWidth();
-        int height = imp.getHeight();
+        int width = ip.getWidth();
+        int height = ip.getHeight();
 
         int[] pixel_width = new int[ width ];
         int[] pixel_height = new int[ height ];
@@ -113,25 +116,26 @@ public class Labels2Rois implements Command {
         ip.setColor(0);
 
         for ( int y_coord : pixel_height) {
-            for ( int x_coord : pixel_width) {
-                if ( ip.getPixel( x_coord, y_coord ) > 0.0 ){
+            for (int x_coord : pixel_width) {
+                float val = ip.getf(x_coord, y_coord);
+                if (val > 0.0) {
                     // use the magic wand at this coordinate
-                    wand.autoOutline( x_coord, y_coord );
-
+                    wand.autoOutline(x_coord, y_coord, val, val);
                     // if there is a region , then it has npoints
-                    if ( wand.npoints > 0 ) {
+                    if (wand.npoints > 0) {
                         // get the Polygon, fill with 0 and add to the manager
-                        Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
-                        roi.setPosition( imp.getCurrentSlice() );
+                        Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.FREEROI);
+                        roi.setPosition(position);
+                        // Name the Roi with the position in the stack followed by the label ID
+                        String roiName = String.format("%04d", position) + " - ID " + String.format("%04d", new Float(val).intValue());
+                        roi.setName(roiName);
                         // ip.fill should use roi, otherwise make a rectangle that erases surrounding pixels
+                        rois.add(roi);
                         ip.fill(roi);
-                        rm.addRoi( roi );
                     }
                 }
             }
         }
-        rm.runCommand( imp , "Show All" );
-        return;
     }
 
 
