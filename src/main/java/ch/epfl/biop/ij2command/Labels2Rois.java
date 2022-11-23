@@ -28,6 +28,7 @@ import ij.gui.PolygonRoi ;
 import ij.gui.Roi ;
 import ij.plugin.Duplicator;
 import ij.plugin.frame.RoiManager ;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
 import net.imagej.ImageJ;
@@ -36,6 +37,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
@@ -74,13 +76,16 @@ public class Labels2Rois implements Command {
         int nSlices     = dimensions[3];
         int nFrames     = dimensions[4];
 
+        if (copy.isRGB()) {
+            System.out.println(""+copy.getTitle() + " is an RGB image. Labels might be inconsistent. Check the results to ensure they are what you expect.");
+        }
+
         if ( ((nChannels>1)&&(nSlices>1)) || ((nChannels>1)&&(nFrames>1)) || ((nSlices>1)&&(nFrames>1))){
             System.err.println(""+copy.getTitle()+" is a hyperstack (multi c , z or t), please prepare a stack (single c, either z-stack or t-stack) from it.");
             return;
         } else {
-            //System.out.println(""+imp.getTitle()+" is a stack of size"+copy_imp.getImageStackSize() );
             for (int i = 0; i < copy.getImageStackSize(); i++) {
-                ImageProcessor ip = copy.getImageStack().getProcessor(i + 1);
+                ImageProcessor ip = (ImageProcessor) copy.getImageStack().getProcessor(i + 1);
                 L2R(ip, i + 1);
             }
         }
@@ -94,6 +99,11 @@ public class Labels2Rois implements Command {
     }
 
     private void L2R(ImageProcessor ip, int position){
+
+        // Make sure to get RGB pixels "accurately" (do not average the RGB values)
+        if (ip instanceof ColorProcessor)
+            ip = Labels2CompositeRois.getRGBPixels((ColorProcessor) ip);
+
         Wand wand = new Wand( ip );
 
         // create range list
