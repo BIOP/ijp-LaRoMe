@@ -21,10 +21,13 @@
  */
 package ch.epfl.biop.ij2command;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.frame.RoiManager;
+import ij.process.ColorProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
 import org.scijava.command.Command;
@@ -90,6 +93,10 @@ public class Labels2CompositeRois implements Command {
             return;
         }
 
+        if (imp.isRGB()) {
+            log.warn(imp.getTitle() + " is an RGB image. Labels might be inconsistent. Check the results to ensure they are what you expect.");
+        }
+
         // Pick up the ROIs from all ImageProcessors as a flat map. Avoid adding it in parallel to the ROI Manager, so we do it later
         List<Roi> allRois = IntStream.range(0, imp.getImageStackSize()).parallel()
                 .mapToObj(i -> L2Rp(imp.getStack().getProcessor(i + 1), i + 1))
@@ -119,14 +126,21 @@ public class Labels2CompositeRois implements Command {
 
         // Keep it simple, convert everything to a double to avoid dealing with
         // different pixel types
-        float[] pixels = (float[]) ip.convertToFloatProcessor().getPixels();
+        // NOTE: that RGB data needs to be dealt with differently, as converting to float just averages the RGB channels
+        float[] pixels;
+        if (ip instanceof ColorProcessor) {
+            ip = getRGBPixels((ColorProcessor) ip);
+        } else {
+            ip = ip.convertToFloatProcessor();
+        }
+        pixels = (float[]) ip.getPixels();
 
         double max = ip.getMax();
 
         // Find unique values for the labels
         // Pre-initialize with the max label value, so the worse thing that can happen is that
         // The map is a bit too big.
-        Set<Float> labels = new HashSet<>((int) max);
+        Set<Float> labels = new HashSet<>((int) 1000);
 
         //make hash to find uniques
         for (int j = 0; j < pixels.length; j++) labels.add(pixels[j]);
@@ -135,8 +149,9 @@ public class Labels2CompositeRois implements Command {
         labels.remove(new Float(0));
 
         // Threshold the image with each min max corresponding to the label ID
+        ImageProcessor finalIp = ip;
         List<Roi> rois = labels.parallelStream().map(lab -> {
-            ImageProcessor ip2 = (ImageProcessor) ip.clone(); // deep copy, so big memory footprint
+            ImageProcessor ip2 = (ImageProcessor) finalIp.clone(); // deep copy, so big memory footprint
             ip2.setThreshold(lab, lab, ImageProcessor.NO_LUT_UPDATE);
             Roi roi = new ThresholdToSelection().convert(ip2);
             roi.setPosition(position);
@@ -148,5 +163,22 @@ public class Labels2CompositeRois implements Command {
         }).collect(Collectors.toList());
 
         return rois;
+    }
+
+    /**
+     * Get RGB pixel values as floats, without using tofloatProcessor, which averages
+     * the 3 channels, which is not what we want.
+     * @param ip the ColorProcessor to convert
+     * @return a floatProcessor
+     */
+    protected static FloatProcessor getRGBPixels(ColorProcessor ip) {
+        int[] pixels = (int[]) ip.getPixels();
+        float[] fp = new float[pixels.length];
+
+        for (int i = 0; i < pixels.length; i++) {
+            // add 2^24 so that the minimum value is 0
+            fp[i] = (float) pixels[i] + (float) Math.pow(2, 24);
+        }
+        return new FloatProcessor(ip.getWidth(), ip.getHeight(), fp);
     }
 }
