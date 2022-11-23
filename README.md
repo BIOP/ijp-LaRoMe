@@ -35,6 +35,26 @@ Macro Language, you can use ```run("Label image to ROIs");``` as in the example 
 ```
 if (nImages>0) run("Label image to ROIs");
 ```
+### Known Limitations and Advantages
+> **Note**
+> In the case of RGB label images (instead of 8, 16 or 32 bit images), this plugin *can* yield accurate labels so long as touching labels do not share the same RGB color. This is in contrast to `run("Label image to composite ROIs")` that will systematically put separate labels together as the same ROI if they have the same RGB color, no matter wether they are touching or not. 
+> Your best best is to avoid RGB images as label images :)
+
+> **Warning**
+> [Following a post made on the ImageSC forum](https://forum.image.sc/t/label-image-to-roimanager/32940/17?u=oburri), "Label image to ROIs" **cannot handle composite ROIs*** (ROIs with holes or disconnected ROIs).
+> In case you expect complex ROIs of this type, you should use `run("Label image to composite ROIs")`
+
+## run("Label image to composite ROIs")
+
+<img src="https://github.com/BIOP/ijp-LaRoMe/raw/master/images/Label_image_to_composite_ROIs.png" title="Label_image_to_composite_ROIs" width="75%" align="center"/>
+
+Uses the same method as Analyse Particles with the "Composite ROIs" option checked. This method was added in November 2022 as a response to [a post made on the ImageSC forum](https://forum.image.sc/t/label-image-to-roimanager/32940/17?u=oburri)
+
+
+> **Warning**
+> In the case of RGB label images (instead of 8, 16 or 32 bit images), this plugin will potentially merge separate labels (that are physically apart, but share the same RGB color) into a single ROI.
+> Your best best is to avoid RGB images as label images if you can :)
+
 
 ## run("ROIs to Label image", "")
 
