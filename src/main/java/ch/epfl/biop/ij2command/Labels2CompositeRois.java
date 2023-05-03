@@ -31,9 +31,10 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
 import org.scijava.command.Command;
-import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.util.HashSet;
@@ -59,8 +60,7 @@ public class Labels2CompositeRois implements Command {
     @Parameter
     RoiManager rm;
 
-    @Parameter
-    LogService log;
+    private static Logger log = LoggerFactory.getLogger(Labels2CompositeRois.class);
 
     /**
      * This main function serves for development purposes.
@@ -121,7 +121,7 @@ public class Labels2CompositeRois implements Command {
      * @param position the position of that processor in the image stack
      * @return a list of ImageJ Rois
      */
-    private List<Roi> L2Rp(ImageProcessor ip, int position) {
+    public static List<Roi> L2Rp(ImageProcessor ip, int position) {
         log.info("Getting Labels for Slice " + position);
 
         // Keep it simple, convert everything to a double to avoid dealing with
