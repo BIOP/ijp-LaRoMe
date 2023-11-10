@@ -63,6 +63,7 @@ public class Rois2MeasurementMap implements Command {
                                                 "AngleVert",
                                                 "AR",
                                                 "Circ.",
+                                                "IntDen",
                                                 "Major",
                                                 "Minor",
                                                 "Mean",
@@ -72,6 +73,7 @@ public class Rois2MeasurementMap implements Command {
                                                 "Max",
                                                 "Perim.",
                                                 "Pattern",
+                                                "RawIntDen",
                                                 "xCenterOfMass",
                                                 "yCenterOfMass"})
     String column_name;
@@ -149,6 +151,9 @@ public class Rois2MeasurementMap implements Command {
                 case "Circ." :   // 4 x  pi x area / perimeter^2
                     filling_value = 4*Math.PI * ip_stats.area / Math.pow(rois[i].getLength() , 2 );
                     break;
+                case "IntDen":
+                    filling_value = ip_stats.area * ip_stats.mean;
+                    break;
                 case "Major":
                     filling_value = ip_stats.major;
                     break;
@@ -191,6 +196,9 @@ public class Rois2MeasurementMap implements Command {
                        }
 
                     }
+                    break;
+                case "RawIntDen":
+                    filling_value = ip_stats.pixelCount * ip_stats.umean;
                     break;
                 case "xCenterOfMass":
                     filling_value = ip_stats.xCenterOfMass;
@@ -256,6 +264,7 @@ public class Rois2MeasurementMap implements Command {
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "AngleVert", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "AR", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Circ.", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "IntDen", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Major", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Minor", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Mean", "pattern", "").get();
@@ -265,6 +274,7 @@ public class Rois2MeasurementMap implements Command {
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Max", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Perim.", "pattern", "").get();
         //ij.command().run(Rois2MeasurementMap.class, true, "column_name", "Pattern", "pattern", "").get();
+        ij.command().run(Rois2MeasurementMap.class, true, "column_name", "RawIntDen", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "xCenterOfMass", "pattern", "").get();
         ij.command().run(Rois2MeasurementMap.class, true, "column_name", "yCenterOfMass", "pattern", "").get();
 
